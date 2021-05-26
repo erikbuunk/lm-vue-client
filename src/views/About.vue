@@ -1,5 +1,9 @@
 <template>
   <div class="about">
-    <h1>This is an about page</h1>
+
+    <div class="container">
+    <h1>Logic Mill</h1>
+      Logic Mill is a project of the <a href="https://www.ip.mpg.de/en.html"> Max Plank Institute for Innovation and Competition. </a>
+    </div>
   </div>
 </template>
