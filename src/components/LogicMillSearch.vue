@@ -113,12 +113,16 @@ export default {
             throw new Error('Something went wrong on api server!');
           })
           .then((response) => {
+            // eslint-disable-next-line
             console.log('Response');
+            // eslint-disable-next-line
             console.debug(response);
             // ...
           })
           .catch((error) => {
+            // eslint-disable-next-line
             console.log('Error');
+            // eslint-disable-next-line
             console.log(error);
           });
 

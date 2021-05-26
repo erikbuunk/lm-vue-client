@@ -1,9 +1,10 @@
 <template>
   <div id="app">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg navbar-light">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Logic Mill</a>
+    <a class="navbar-brand logo" href="#"><img src="@/assets/logo1024.png"
+    alt="Logic Mill Logo" width="200px"></a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
     data-bs-target="#navbarColor01" aria-controls="navbarColor01"
     aria-expanded="false" aria-label="Toggle navigation">
@@ -39,5 +40,16 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+.bg-primary,
+.btn-primary,
+.btn-primary:hover {
+
+    background-color: #00479F !important;
+    border-color: #00479F !important;
+}
+
+.logo{
+  padding-left: 50px;
+}
 </style>
