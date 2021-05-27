@@ -11,7 +11,6 @@ import LogicMillSearch from '@/components/LogicMillSearch.vue';
 export default {
   name: 'Home',
   components: {
-    // HelloWorld,
     LogicMillSearch,
   },
 };

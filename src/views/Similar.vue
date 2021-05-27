@@ -4,11 +4,12 @@
     <div class="p-5 mb-4 bg-light rounded-3">
 
       <div class="container-fluid py-5">
-        <h1 class="display-3">{{ msg }}</h1>
+        <h1 class="display-3">Find similar documents</h1>
 
-        <p class="lead">Enter search query for Logic Mill</p>
-        <input class="form-control form-control-lg mb-4" type="text" id="message" v-model="message"
-          placeholder="Search Text" v-on:keyup="getResults" style="background-color: white" />
+        <!-- <p class="lead">Enter Doc ID</p> -->
+        <input class="form-control form-control-lg mb-4" type="text" id="message"
+        v-model="selectedDocID"
+          placeholder="Enter Doc ID" v-on:keyup="getResults" style="background-color: white" />
 
         <div class="row">
 
@@ -20,9 +21,6 @@
       </div>
 
     </div>
-    <div class="alert alert-dismissible alert-danger" v-if="status === false">
-      Server is DOWN!
-    </div>
 
     <!-- results -->
 
@@ -33,12 +31,8 @@
    {{ titleCase(item.document) }}
     <span class="badge bg-primary rounded-pill">{{item.type}}</span>
     <br/>
-   <small class="text-muted">Document ID: {{item.id}}</small>
+   <small class="text-muted">Score: {{item.score.toFixed(3)}}</small>
     </div>
-
-<!-- <button type="button" class="btn btn-primary btn-lg">~</button> -->
-<button type="button" class="btn btn-outline-primary" data-bs-toggle="tooltip"
-data-bs-placement="left" title="Find similar documents" @click="findSimilar(item.id)">~</button>
 
   </li>
 
@@ -51,76 +45,41 @@ data-bs-placement="left" title="Find similar documents" @click="findSimilar(item
 
 <script>
 export default {
-  name: 'LogicMillSearch',
+  name: 'LogicMillSimilar',
   props: {
-    msg: String,
+    docid: String,
   },
   data() {
     return {
       results: [],
-      message: '',
       API_ENDPOINT: 'https://api.logic-mill.net',
       INDEX: 'logic_mill_initial',
-      status: false,
       indices: [],
+      selectedDocID: '',
       selectedIndex: '',
+      amount: 10,
     };
   },
   created() {
-    this.getStatus();
+    this.selectedDocID = this.$route.params.docid;
+    if (this.selectedDocID !== '') {
+      this.getResults('button');
+    }
   },
   methods: {
     titleCase(str) {
       return str.split(' ').map((word) => word.replace(word[0], word[0].toUpperCase())).join(' ');
-    },
-    getDeepLink(doi) {
-      // return `https://${this.logicMillURL}/dataset.xhtml?persistentId=${doi}`;
-      return doi;
-    },
-    findSimilar(docid) {
-      this.$router.push({ name: 'Similar', params: { docid } });
-
-      // window.location.href = `${this.logicMillURL}/dataset.xhtml?persistentId=${doi}`;
-
-      return docid;
-    },
-    getStatus() {
-      const searchURL = `${this.API_ENDPOINT}`;
-
-      const request = new Request(searchURL, {
-        method: 'GET',
-      });
-
-      fetch(request)
-        .then((response) => {
-          if (response.status === 200) {
-            return response.json();
-          }
-          throw new Error('Something went wrong on api server!');
-        })
-        .then((response) => {
-          this.status = response.status === 'UP';
-        })
-        .catch((error) => {
-          // eslint-disable-next-line
-            console.log(error);
-        });
     },
     getResults(e) {
       if (e.keyCode === 13 || e === 'button') {
         this.results = {};
 
         const currentIndex = this.selectedIndex !== '' ? this.selectedIndex : this.INDEX;
-        const searchURL = `${this.API_ENDPOINT}/indices/${currentIndex}/search`;
-
-        // // concatenate results with a '+'
-        const search = this.message; // .replace(/ /g, "+");
-        const dataSearch = { keyword: search };
-        const body = JSON.stringify(dataSearch);
+        const searchURL = `${this.API_ENDPOINT}/indices/${currentIndex}/doc/${this.selectedDocID}`
+        + `/similarity?amount=${this.amount}`;
 
         const request = new Request(searchURL, {
-          method: 'PUT',
-          body,
+          method: 'GET',
         });
 
         fetch(request)
@@ -132,16 +91,21 @@ export default {
           })
           .then((response) => {
             const { hits } = response.hits;
+
             const tmpResults = [];
 
             hits.forEach((r) => {
               // eslint-disable-next-line no-underscore-dangle
-              const { id } = r._source;
+              const id = r._id;
+              // eslint-disable-next-line no-underscore-dangle
+              const score = r._score - 1;
               // eslint-disable-next-line no-underscore-dangle
               const { document } = r._source;
               // eslint-disable-next-line no-underscore-dangle
               const { type } = r._source.metadata;
-              tmpResults.push({ id, document, type });
+              tmpResults.push({
+                id, document, type, score,
+              });
             });
             this.results = tmpResults;
           })
@@ -150,6 +114,7 @@ export default {
               console.log('Error');
             // eslint-disable-next-line
               console.log(error);
+            this.results = [];
           });
       }
     },
